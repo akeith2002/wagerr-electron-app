@@ -1,8 +1,8 @@
-import { app, BrowserWindow, dialog } from 'electron';
+import { app, BrowserWindow, dialog, Menu } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import fs from 'fs';
 import { checkForUpdates } from './updater/updater';
-import menus from './menu/menus';
+import menu from './menu/menu';
 import errors from './alerts/errors';
 
 import Daemon from './blockchain/daemon';
@@ -20,13 +20,6 @@ const winURL =
     ? `http://localhost:9080`
     : `file://${__dirname}/index.html`;
 
-// Set `__static` path to static files in production
-if (process.env.NODE_ENV !== 'development') {
-  global.__static = require('path')
-    .join(__dirname, '/static')
-    .replace(/\\/g, '\\\\');
-}
-
 // Globals
 let daemon;
 let mainWindow = null;
@@ -36,49 +29,57 @@ let closeWindowFlag = false;
 let closeProgressBar = null;
 let forcelyQuit = false;
 /**
- * Render the main window for the Wagerr wallet.
+ * Render the main window for the Wagerr Electron App.
  */
 async function createMainWindow() {
-  // Initial window options.
-  mainWindow = new BrowserWindow({
-    backgroundColor: '#2B2C2D',
+  const windowOptions = {
+    width: 1275,
     height: 700,
-    width: 1200,
+    minWidth: 1275,
     minHeight: 700,
-    minWidth: 1200,
-    show: false,
     icon: path.join(__dirname, '../renderer/assets/images/icons/png/256.png'),
-    useContentSize: true
-  });
+    show: false,
+    autoHideMenuBar: true,
+    backgroundColor: '#2B2C2D'
+  };
 
-  // Close the web developer's console.
-  // mainWindow.webContents.closeDevTools();
+  mainWindow = new BrowserWindow(windowOptions);
 
   // Load the main browser window with the Wagerr vue application.
   mainWindow.loadURL(winURL);
 
   // Add the main application menu to the UI.
-  menus.initMainMenu();
+  Menu.setApplicationMenu(menu);
 
-  // Close the window action
+  // Prepare for the window to be closed.
   mainWindow.on('close', async event => {
     if (closeWindowFlag === false && process.platform !== 'darwin') {
-      // Prevent the default close action before daemon is completely stopped.
-      closeWindowFlag = true;
-      event.preventDefault();
-
-      // Make the progress bar to show the status of close actions
-      closeProgressBar = new ProgressBar({
-        text: 'Closing the Window...',
-        detail: 'Stopping Wagerr Daemon...',
-        closeOnComplete: true
-      });
-      closeProgressBar._window.webContents.closeDevTools();
-
-      // Stop the daemon and close the app completely.
+      // Stop the daemon and close the app completely, but only if the app is
+      // not being restarted. If the app is just being restarted, like if we
+      // use 'zapwallettxes', we don't want to quit the app, just close the
+      // mainWindow instead.
       if (daemon && !global.restarting) {
+        // Prevent the default close action before daemon is completely stopped.
+        closeWindowFlag = true;
+        event.preventDefault();
+
+        // Make the progress bar to show the status of close actions.
+        closeProgressBar = new ProgressBar({
+          text: 'Closing the Window...',
+          detail: 'Stopping Wagerr daemon...',
+          closeOnComplete: true
+        });
+
+        // Close the devtools window.
+        closeProgressBar._window.webContents.closeDevTools();
+
+        // Send the `stop` command to the daemon and wait for to shutdown.
         await daemon.stop();
-        closeProgressBar.detail = 'Wagger Daemon Stopped...';
+
+        // Notify the user the daemon has shutdown.
+        closeProgressBar.detail = 'Wagger daemon stopped...';
+
+        // Close the shutdown progress bar window and quit the app.
         setTimeout(() => {
           closeProgressBar.close();
           app.quit();
@@ -87,8 +88,9 @@ async function createMainWindow() {
     }
   });
 
-  // Reset the main window on close.
+  // The window is now closed.
   mainWindow.on('closed', async () => {
+    // Reset the main window on close.
     mainWindow = null;
   });
 
@@ -100,11 +102,13 @@ async function createMainWindow() {
   // Once electron app is ready then display the vue UI.
   mainWindow.once('ready-to-show', () => {
     const network = blockchain.testnet === 0 ? 'Mainnet' : 'Testnet';
-    const title = `Wagerr Wallet - ${network}`;
+    const title = `Wagerr Electron App - ${network}`;
 
     mainWindow.setTitle(title);
     mainWindow.show();
-    mainWindow.focus();
+    setImmediate(() => {
+      mainWindow.focus();
+    });
   });
 
   // If running in dev mode then also open dev tools on the main window.
@@ -129,7 +133,7 @@ async function createMainWindow() {
  * @returns {Promise<void>}
  */
 async function init(args) {
-  console.log('\x1b[32mInitialising Wagerr Wallet...\x1b[0m');
+  console.log('\x1b[32mInitialising Wagerr Electron App...\x1b[0m');
   daemon = new Daemon();
 
   // Check if the wagerrd binary exists.
