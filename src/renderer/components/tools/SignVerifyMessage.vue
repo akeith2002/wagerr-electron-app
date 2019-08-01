@@ -1,12 +1,7 @@
 <template>
-  <!-- Sign / Verify Messages Modal -->
-
-  <div id="sign-verify-message" class="modal bg-gradient">
-    <div class="inset-top">
-      <div class="shadow"></div>
-    </div>
-
-    <div class="modal-content">
+  <div id="sign-verify-message" class="content row">
+    <div class="col s12">
+      <h4>Sign/Verify Message</h4>
       <div class="row">
         <ul class="tabs">
           <li class="tab col s6 m6 l6 active">
@@ -19,8 +14,8 @@
         </ul>
 
         <div id="sign-message-form" class="sign-message">
-          <div class="modal-text">
-            <p class="modal-font">
+          <div>
+            <p>
               You can sign messages with your addresses to prove you own them.
               Be careful not to sign anything vague, as phishing attacks may try
               to trick you into signing your identity over to them. Only sign
@@ -77,6 +72,8 @@
                 id="signed-signature"
                 name="signed-signature"
                 type="text"
+                placeholder="Click sign message to generate a signature"
+                readonly
               />
 
               <label for="signed-signature" class="active">Signature</label>
@@ -95,20 +92,20 @@
             <div class="options">
               <a
                 @click="clearForms()"
-                class="modal-close waves-effect waves-light btn wagerr-red-bg"
-                >CANCEL</a
+                class="waves-effect waves-light btn wagerr-red-bg"
+                >Clear Form</a
               >
 
               <button type="submit" class="waves-effect waves-light btn green">
-                SIGN MESSAGE
+                Sign Message
               </button>
             </div>
           </form>
         </div>
 
         <div id="verify-message-form" class="verify-message">
-          <div class="modal-text">
-            <p class="modal-font">
+          <div>
+            <p>
               Enter the signing address, message (ensure you copy line breaks,
               spaces, tabs, etc. exactly) and signature below to verify the
               message. Be careful not to read more into the signature than what
@@ -172,7 +169,7 @@
                 type="text"
               />
 
-              <label for="verified-signature" class="active">Signature</label>
+              <label for="verified-signature">Signature</label>
 
               <span
                 v-if="errors.has('verify-form.verified-signature')"
@@ -181,15 +178,15 @@
               >
             </div>
 
-            <div class="options-verify">
+            <div class="options">
               <a
                 @click="clearForms()"
-                class="modal-close waves-effect waves-light btn wagerr-red-bg"
-                >CANCEL</a
+                class="waves-effect waves-light btn wagerr-red-bg"
+                >Clear Form</a
               >
 
               <button type="submit" class="waves-effect waves-light btn green">
-                VERIFY MESSAGE
+                Verify Message
               </button>
             </div>
           </form>
@@ -205,10 +202,6 @@ import wagerrRPC from '@/services/api/wagerrRPC';
 
 export default {
   name: 'VerifyMessage',
-
-  computed: {
-    ...Vuex.mapGetters([])
-  },
 
   methods: {
     // Handle the sign from validation and if all fields valid sign the message.
@@ -334,57 +327,43 @@ export default {
 <style lang="scss" scoped>
 @import '../../assets/scss/_variables';
 
-.row {
-  margin-bottom: 0;
+.tabs .indicator {
+  border-bottom: 1px solid $wagerr_red;
+  background-color: transparent;
 }
 
-.modal {
-  overflow-y: inherit;
-  min-height: 0 !important;
-  max-height: 90% !important;
+.input-field input {
+  color: $dark_grey;
 }
 
-.modal-font {
-  text-align: justify;
+.input-field input:focus {
+  color: $dark_grey !important;
 }
 
-.tab {
-  background-color: $dark_grey;
+.input-field input::placeholder {
+  color: $dark_grey;
 }
 
-.tab .active {
+.input-field input[readonly='readonly'] {
+  color: $dark_grey;
+}
+
+.input-field label {
   color: $wagerr_red;
 }
 
-.input-field span {
-  margin-left: 45px;
-}
-
-.modal-footer .modal-btn-padding {
-  padding-right: 5px;
-}
-
-.sign-message__copy {
-  margin-top: 25px;
-  margin-left: -15px;
-}
-
-.modal-content .options {
-  width: 260px;
+.options {
+  width: 100%;
+  height: auto;
   margin-left: auto;
   margin-right: auto;
-}
-
-.modal-content .options-verify {
-  width: 275px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.options a,
-.options button,
-.options-verify a,
-.options-verify button {
-  margin-top: 20px;
+  margin-bottom: 20px;
+  text-align: center;
+  button {
+    background-color: $wagerr_red;
+    &::active {
+      width: 150px;
+    }
+  }
 }
 </style>

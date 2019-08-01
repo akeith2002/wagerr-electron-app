@@ -3,10 +3,6 @@
 
   <div id="encrypt-wallet" class="modal bg-gradient">
     <form @submit.prevent="handleSubmit">
-      <div class="inset-top">
-        <div class="shadow"></div>
-      </div>
-
       <div class="modal-content">
         <div class="row">
           <div class="modal-header">
@@ -18,8 +14,8 @@
               Enter the new password which will be used to unlock your wallet.
             </p>
 
-            <p>
-              Please use a secure password of seven or more random characters.
+            <p class="gray">
+              (Please use a secure password of seven or more random characters.)
             </p>
           </div>
 
@@ -79,6 +75,7 @@
 
 <script>
 import wagerrRPC from '@/services/api/wagerrRPC';
+import ipcRenderer from '../../../common/ipc/ipcRenderer';
 
 export default {
   name: 'EncryptWallet',
@@ -92,45 +89,50 @@ export default {
         }
 
         // If the form is valid then encrypt the wallet.
-        this.encryptWallet().then(() => {
-          // Clear any errors after successful wallet encryption.
-          this.clearForm();
-        });
+        this.encryptWallet();
       });
     },
 
     // Encrypt the users Wallet.
     encryptWallet: function() {
-      return new Promise((resolve, reject) => {
-        // Send RPC request to encrypt the users wallet with the provided password.
-        wagerrRPC.client
-          .encryptWallet(this.password)
-          .then(function(resp) {
-            // If successful response.
-            if (resp.error === 'null') {
-              M.toast({
-                html:
-                  '<span class="toast__bold-font">Success &nbsp;</span> ' +
-                  resp.result,
-                classes: 'green'
-              });
-            } else {
-              M.toast({
-                html:
-                  '<span class="toast__bold-font">Error &nbsp;</span> ' +
-                  resp.result,
-                classes: 'wagerr-red-bg'
-              });
-            }
+      let self = this;
 
-            resolve();
-          })
-          .catch(function(err) {
-            M.toast({ html: err, classes: 'wagerr-red-bg' });
-            console.error(err);
-            reject();
-          });
+      // Disable clicking events while we wait for encryption to finish.
+      document.body.style.pointerEvents = 'none';
+
+      // Notify they user that the encryption can take a while.
+      M.toast({
+        html:
+          '<span class="toast__bold-font">Success &nbsp;</span> Wallet is encrypting, this may take a while.',
+        classes: 'green'
       });
+
+      // Send RPC request to encrypt the users wallet with the provided password.
+      wagerrRPC.client
+        .encryptWallet(this.password)
+        .then(function(resp) {
+          // Notify the user that the encryption was successful and the wallet will restart soon.
+          M.toast({
+            html:
+              '<span class="toast__bold-font">Success &nbsp;</span> Wallet has been encrypted and will restart in a few seconds.',
+            classes: 'green'
+          });
+
+          self.clearForm();
+        })
+        .then(function() {
+          // Restart the wallet.
+          setTimeout(function() {
+            ipcRenderer.encryptWallet();
+          }, 6000);
+        })
+        .catch(function(err) {
+          // Re-enable clicking events if encryption fails.
+          document.body.style.pointerEvents = 'unset';
+
+          M.toast({ html: err, classes: 'wagerr-red-bg' });
+          console.error(err);
+        });
     },
 
     // Clear the form data and errors.
@@ -163,6 +165,10 @@ export default {
   overflow-y: inherit;
 }
 
+.gray {
+  color: #aaa;
+}
+
 .input-field span {
   margin-left: 45px;
 }
@@ -171,6 +177,9 @@ export default {
   width: 210px;
   margin-left: auto;
   margin-right: auto;
+}
+.modal-content p {
+  margin: 10px 0;
 }
 
 .options a,

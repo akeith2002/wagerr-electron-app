@@ -1,9 +1,18 @@
 const { ipcRenderer } = require('electron');
 
+function log(level, message) {
+  ipcRenderer.send('log-message', level, message);
+}
+
 async function runCommand(cmd) {
   const res = await ipcRenderer.sendSync('runCommand', cmd);
   return res;
 }
+
+function encryptWallet() {
+  ipcRenderer.send('encrypt-wallet');
+}
+
 function salvageWallet() {
   ipcRenderer.send('salvage-wallet', '-salvagewallet');
 }
@@ -41,6 +50,8 @@ function noPeers() {
 }
 
 export default {
+  log,
+  encryptWallet,
   salvageWallet,
   rescanBlockchain,
   recoverTxes1,

@@ -87,13 +87,17 @@
 
 <script>
 import Vuex from 'vuex';
-import constants from '../../../../main/constants/constants';
+import constants from '../../../main/constants/constants';
 
 export default {
   name: 'BetTransactionList',
 
   computed: {
-    ...Vuex.mapGetters(['plBetTransactionList', 'getNetworkType', 'getTimezone'])
+    ...Vuex.mapGetters([
+      'plBetTransactionList',
+      'getNetworkType',
+      'getTimezone'
+    ])
   },
 
   methods: {

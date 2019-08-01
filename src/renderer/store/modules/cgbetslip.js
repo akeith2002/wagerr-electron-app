@@ -1,5 +1,5 @@
-import wagerrRPC from '@/services/api/wagerrRPC';
 import moment from 'moment';
+import wagerrRPC from '@/services/api/wagerrRPC';
 
 /**
  * Contains all the methods to store users bet slip state and add/remove bets from the bet slip.
@@ -97,7 +97,7 @@ const actions = {
         // Calculate the lotto end date. Add one day for testnet and seven days for mainnet.
         const endDate = moment
           .unix(resp.result['start-time'])
-          .add(resp.result.network === 1 ? 1 : 7, 'days');
+          .add(resp.result.network === 'test' ? 1 : 7, 'days');
 
         commit('setEntryFee', `${resp.result['entry-fee']}`);
         commit('setPotSize', `${resp.result['pot-size']}`);
@@ -152,7 +152,7 @@ const mutations = {
 
   setGameEndTime(state, gameEndTime) {
     state.gameEndTime = gameEndTime;
-  },
+  }
 };
 
 export default {

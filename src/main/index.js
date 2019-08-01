@@ -1,18 +1,19 @@
-import { app, BrowserWindow, dialog, Menu } from 'electron';
+import { BrowserWindow, Menu, app, dialog } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import fs from 'fs';
-import { checkForUpdates } from './updater/updater';
-import menu from './menu/menu';
 import errors from './alerts/errors';
-
-import Daemon from './blockchain/daemon';
 import * as blockchain from './blockchain/blockchain';
+import Daemon from './blockchain/daemon';
+import menu from './menu/menu';
+import { checkForUpdates } from './updater/updater';
+import { spawnLogger } from './logger/logger';
 
 const { ipcMain } = require('electron');
-
-// import isDev from 'electron-is-dev';
 const path = require('path');
 const ProgressBar = require('electron-progressbar');
+
+const logger = spawnLogger();
+const packageJSON = require('../../package.json');
 
 // Main app URL.
 const winURL =
@@ -28,10 +29,13 @@ global.restarting = false;
 let closeWindowFlag = false;
 let closeProgressBar = null;
 let forcelyQuit = false;
+
 /**
  * Render the main window for the Wagerr Electron App.
  */
 async function createMainWindow() {
+  logger.info('Rendering main window');
+
   const windowOptions = {
     width: 1275,
     height: 700,
@@ -40,7 +44,10 @@ async function createMainWindow() {
     icon: path.join(__dirname, '../renderer/assets/images/icons/png/256.png'),
     show: false,
     autoHideMenuBar: true,
-    backgroundColor: '#2B2C2D'
+    backgroundColor: '#2B2C2D',
+    webPreferences: {
+      nodeIntegration: true
+    }
   };
 
   mainWindow = new BrowserWindow(windowOptions);
@@ -101,20 +108,14 @@ async function createMainWindow() {
 
   // Once electron app is ready then display the vue UI.
   mainWindow.once('ready-to-show', () => {
-    const network = blockchain.testnet === 0 ? 'Mainnet' : 'Testnet';
-    const title = `Wagerr Electron App - ${network}`;
+    const network = blockchain.testnet === 1 ? ' - Testnet' : '';
+    const title = `Wagerr Electron App${network}`;
 
     mainWindow.setTitle(title);
     mainWindow.show();
     setImmediate(() => {
       mainWindow.focus();
     });
-  });
-
-  // If running in dev mode then also open dev tools on the main window.
-  mainWindow.webContents.on('did-finish-load', () => {
-    // console.log('did-finish-loading...');
-    // mainWindow.webContents.openDevTools()
   });
 
   // If the main window has crashed, clear it.
@@ -133,7 +134,7 @@ async function createMainWindow() {
  * @returns {Promise<void>}
  */
 async function init(args) {
-  console.log('\x1b[32mInitialising Wagerr Electron App...\x1b[0m');
+  logger.info('Initialising Wagerr Electron App');
   daemon = new Daemon();
 
   // Check if the wagerrd binary exists.
@@ -141,8 +142,8 @@ async function init(args) {
   const wagerrcliExe = daemon.getExecutablePath('wagerr-cli');
 
   if (!fs.existsSync(wagerrExe) || !fs.existsSync(wagerrcliExe)) {
-    console.error(
-      '\x1b[32mThe wagerrd and wagerr-cli binaries do not exist. Please download and place in the bin directory.\x1b[0m'
+    logger.error(
+      'The wagerrd and wagerr-cli binaries do not exist. Please download and place in the bin directory.'
     );
     process.exit(1);
   }
@@ -173,37 +174,37 @@ async function init(args) {
 }
 
 app.on('ready', async () => {
-  console.log('\x1b[32mWagerr Electron App starting...\x1b[0m');
+  logger.info(`Wagerr Electron App version v${packageJSON.version}`);
+  logger.info('Finished initializing and ready to start');
 
   // Check for updates only for the packaged app.
   if (process.env.NODE_ENV === 'production') {
+    logger.info('Checking for an update');
     checkForUpdates();
 
     // If no updates available continue with initialising the app,
     // otherwise, updater.js would have caught the update-available event
     // and downloaded and restarted the app.
     autoUpdater.on('update-not-available', async () => {
+      logger.info('No update available, continuing with launch');
       await init();
     });
   } else {
+    logger.debug('Skipping update check when running in development mode');
     await init();
   }
 });
 
 app.on('before-quit', async () => {
-  console.log('\x1b[32mbefore-quit\x1b[0m');
+  logger.info('Preparing to close all windows');
 });
 
 app.on('will-quit', async () => {
-  console.log('\x1b[32mwill-quit\x1b[0m');
+  logger.info('All windows have been closed and the application will quit');
 
   if (process.platform === 'darwin' && !forcelyQuit) {
     await daemon.stop();
   }
-});
-
-app.on('window-all-closed', async () => {
-  console.log('\x1b[32mwindow-all-closed\x1b[0m');
 });
 
 app.on('activate', async () => {
@@ -215,6 +216,16 @@ app.on('activate', async () => {
 // TODO - Move code to more appropriate location or new file.
 ipcMain.on('runCommand', async (event, arg) => {
   event.returnValue = await daemon.runCommand(arg);
+});
+
+/**
+ * Encrypt wallet IPC handlers
+ */
+ipcMain.on('encrypt-wallet', async (event, arg) => {
+  global.restarting = true;
+
+  await mainWindow.close();
+  await init(arg);
 });
 
 /**
@@ -234,7 +245,7 @@ ipcMain.on('salvage-wallet', async (event, arg) => {
     global.restarting = true;
 
     await daemon.stop().catch(function() {
-      console.log('Wagerrd may not have shutdown correctly.');
+      logger.warn('wagerrd may not have shutdown correctly.');
     });
     await mainWindow.close();
     await init(arg);
@@ -256,7 +267,7 @@ ipcMain.on('rescan-blockchain', async (event, arg) => {
     global.restarting = true;
 
     await daemon.stop().catch(function() {
-      console.log('Wagerrd may not have shutdown correctly.');
+      logger.warn('wagerrd may not have shutdown correctly.');
     });
     await mainWindow.close();
     await init(arg);
@@ -279,7 +290,7 @@ ipcMain.on('recover-tx-1', async (event, arg) => {
     global.restarting = true;
 
     await daemon.stop().catch(function() {
-      console.log('Wagerrd may not have shutdown correctly.');
+      logger.warn('wagerrd may not have shutdown correctly.');
     });
     await mainWindow.close();
     await init(arg);
@@ -301,7 +312,7 @@ ipcMain.on('recover-tx-2', async (event, arg) => {
     global.restarting = true;
 
     await daemon.stop().catch(function() {
-      console.log('Wagerrd may not have shutdown correctly.');
+      logger.warn('wagerrd may not have shutdown correctly.');
     });
     await mainWindow.close();
     await init(arg);
@@ -323,7 +334,7 @@ ipcMain.on('upgrade-wallet', async (event, arg) => {
     global.restarting = true;
 
     await daemon.stop().catch(function() {
-      console.log('Wagerrd may not have shutdown correctly.');
+      logger.warn('wagerrd may not have shutdown correctly.');
     });
     await mainWindow.close();
     await init(arg);
@@ -345,7 +356,7 @@ ipcMain.on('reindex-blockchain', async (event, arg) => {
     global.restarting = true;
 
     await daemon.stop().catch(function() {
-      console.log('Wagerrd may not have shutdown correctly.');
+      logger.warn('wagerrd may not have shutdown correctly.');
     });
     await mainWindow.close();
     await init(arg);
@@ -367,7 +378,7 @@ ipcMain.on('resync-blockchain', async (event, arg) => {
     global.restarting = true;
 
     await daemon.stop().catch(function() {
-      console.log('Wagerrd may not have shutdown correctly.');
+      logger.warn('wagerrd may not have shutdown correctly.');
     });
     await mainWindow.close();
     await init(arg);
@@ -389,7 +400,7 @@ ipcMain.on('restart-wagerrd', async (event, arg) => {
     global.restarting = true;
 
     await daemon.stop().catch(function() {
-      console.log('Wagerrd may not have shutdown correctly.');
+      logger.warn('wagerrd may not have shutdown correctly.');
     });
     await mainWindow.close();
     await init(arg);
@@ -409,4 +420,8 @@ ipcMain.on('rpc-password', event => {
 // Show error dialog informing user that the wallet could not connect to wagerr network.
 ipcMain.on('no-peers', () => {
   errors.noPeersConnectionError();
+});
+
+ipcMain.on('log-message', (event, ...args) => {
+  logger.log(...args);
 });

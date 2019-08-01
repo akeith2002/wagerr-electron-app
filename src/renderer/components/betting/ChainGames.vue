@@ -19,11 +19,19 @@
 
           <div class="bet-slip-options text-center clearfix chain-btns">
             <button
-              class="waves-effect waves-light btn-large wagerr-red-bg pulse"
+              class="waves-effect waves-light btn-large wagerr-red-bg"
               @click="placeCGLottoBet"
             >
               Buy Ticket
             </button>
+
+            <span class="cost"
+              >(Entry Fee: {{ entryFee }}
+              <span class="currency">{{
+                getNetworkType === 'Testnet' ? 'tWGR' : 'WGR'
+              }}</span
+              >)</span
+            >
           </div>
         </div>
         <div class="lotto-right col s8">
@@ -44,7 +52,7 @@
 
           <div class="all-stats">
             <div class="col s4 text-center stats">
-              <h6>Potential Winnings</h6>
+              <h6>Winner's Prize</h6>
 
               <div v-if="loadingCGEvent">
                 <spinner></spinner>
@@ -101,7 +109,7 @@
             </div>
 
             <div class="col s4 text-center  stats">
-              <h6>Entrants</h6>
+              <h6>Tickets Sold</h6>
 
               <div v-if="loadingCGEvent">
                 <spinner></spinner>
@@ -111,13 +119,18 @@
             </div>
 
             <div class="col s4 text-center stats">
-              <h6>Entry</h6>
+              <h6>Ticket Price</h6>
 
               <div v-if="loadingCGEvent">
                 <spinner></spinner>
               </div>
 
-              <div v-else class="cg-info">{{ entryFee }}</div>
+              <div v-else class="cg-info">
+                {{ entryFee
+                }}<span class="currency">{{
+                  getNetworkType === 'Testnet' ? 'tWGR' : 'WGR'
+                }}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -142,8 +155,6 @@ import CGLottoInfo from '@/components/betting/components/CGLottoInfo';
 export default {
   name: 'CGLottoBets',
   components: { CGLottoBetTransactionList, CGLottoInfo, Spinner },
-
-  
 
   computed: {
     ...Vuex.mapGetters([

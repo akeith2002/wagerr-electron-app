@@ -6,7 +6,10 @@ const path = require('path');
 const { dependencies } = require('../package.json');
 const webpack = require('webpack');
 
+const TerserPlugin = require('terser-webpack-plugin');
+
 let mainConfig = {
+  devtool: 'source-map',
   entry: {
     main: path.join(__dirname, '../src/main/index.js')
   },
@@ -37,7 +40,16 @@ let mainConfig = {
   resolve: {
     extensions: ['.js', '.json', '.node']
   },
-  target: 'electron-main'
+  target: 'electron-main',
+  optimization: {
+    minimizer: [
+      new TerserPlugin({
+        parallel: true,
+        sourceMap: true,
+        cache: true
+      })
+    ]
+  }
 };
 
 /**

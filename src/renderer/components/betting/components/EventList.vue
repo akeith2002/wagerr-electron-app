@@ -4,9 +4,12 @@
       <ul class="events-list">
         <li v-for="event in eventsList" :key="event.event_id" class="card">
           <div class="event-tournament">
-            <span class="sport">{{ event.tournament }} (Event ID: {{ event.event_id }})</span>
+            <span class="sport"
+              >{{ event.tournament }} (Event ID: {{ event.event_id }})</span
+            >
             <span class="date pull-right">{{
-              Number(event.starting) | moment('timezone', getTimezone, 'dddd MMM Do h:m A')
+              Number(event.starting)
+                | moment('timezone', getTimezone, 'dddd, MMM Do h:mm A (Z z)')
             }}</span>
           </div>
 
@@ -52,7 +55,7 @@
                   <div class="odd">
                     <button
                       v-if="event.odds[0].mlHome !== 0"
-                      class="waves-effect waves-light btn"
+                      class="btn"
                       @click="
                         createBet(
                           event.event_id,
@@ -62,21 +65,16 @@
                         )
                       "
                     >
-                      {{ event.odds[0].mlHome / oddsDivisor }}
+                      {{ convertOdds(event.odds[0].mlHome) }}
                     </button>
-
-                    <button
-                      v-else
-                      class="waves-effect waves-light btn"
-                      disabled
-                    >
+                    <button v-else class="btn" disabled>
                       N/A
                     </button>
                   </div>
                   <div class="odd">
                     <button
                       v-if="event.odds[0].mlAway !== 0"
-                      class="waves-effect waves-light btn"
+                      class="btn"
                       @click="
                         createBet(
                           event.event_id,
@@ -86,21 +84,17 @@
                         )
                       "
                     >
-                      {{ event.odds[0].mlAway / oddsDivisor }}
+                      {{ convertOdds(event.odds[0].mlAway) }}
                     </button>
 
-                    <button
-                      v-else
-                      class="waves-effect waves-light btn"
-                      disabled
-                    >
+                    <button v-else class="btn" disabled>
                       N/A
                     </button>
                   </div>
                   <div class="odd">
                     <button
                       v-if="event.odds[0].mlDraw !== 0"
-                      class="waves-effect waves-light btn"
+                      class="btn"
                       @click="
                         createBet(
                           event.event_id,
@@ -110,14 +104,10 @@
                         )
                       "
                     >
-                      {{ event.odds[0].mlDraw / oddsDivisor }}
+                      {{ convertOdds(event.odds[0].mlDraw) }}
                     </button>
 
-                    <button
-                      v-else
-                      class="waves-effect waves-light btn"
-                      disabled
-                    >
+                    <button v-else class="btn" disabled>
                       N/A
                     </button>
                   </div>
@@ -126,12 +116,12 @@
                 <!-- Show money line market closed -->
                 <div v-else class="col s12 m4 odds">
                   <div class="ml">
-                    <button class="waves-effect waves-light btn" disabled>
+                    <button class="btn" disabled>
                       N/A
                     </button>
                   </div>
                   <div class="ml">
-                    <button class="waves-effect waves-light btn" disabled>
+                    <button class="btn" disabled>
                       N/A
                     </button>
                   </div>
@@ -144,7 +134,7 @@
                 >
                   <div class="spread">
                     <button
-                      class="waves-effect waves-light btn"
+                      class="btn"
                       @click="
                         createBet(
                           event.event_id,
@@ -170,13 +160,13 @@
                       >
 
                       <span class="pull-right">{{
-                        event.odds[1].spreadHome / oddsDivisor
+                        convertOdds(event.odds[1].spreadHome)
                       }}</span>
                     </button>
                   </div>
                   <div class="spread">
                     <button
-                      class="waves-effect waves-light btn"
+                      class="btn"
                       @click="
                         createBet(
                           event.event_id,
@@ -202,7 +192,7 @@
                       >
 
                       <span class="pull-right">{{
-                        event.odds[1].spreadAway / oddsDivisor
+                        convertOdds(event.odds[1].spreadAway)
                       }}</span>
                     </button>
                   </div>
@@ -211,12 +201,12 @@
                 <!-- Show Spread market closed -->
                 <div v-else class="col s12 m4 odds">
                   <div class="spread">
-                    <button class="waves-effect waves-light btn" disabled>
+                    <button class="btn" disabled>
                       N/A
                     </button>
                   </div>
                   <div class="spread">
-                    <button class="waves-effect waves-light btn" disabled>
+                    <button class="btn" disabled>
                       N/A
                     </button>
                   </div>
@@ -226,7 +216,7 @@
                 <div v-if="isEventTotalsOddsSet(event)" class="col s12 m4 odds">
                   <div class="total">
                     <button
-                      class="waves-effect waves-light btn"
+                      class="btn"
                       @click="
                         createBet(
                           event.event_id,
@@ -239,18 +229,18 @@
                         )
                       "
                     >
-                      <span class="pull-left"
-                        >O{{ event.odds[2].totalsPoints / 10 }}</span
+                      <span class="totalnum"
+                        >(O{{ event.odds[2].totalsPoints / 10 }})</span
                       >
 
-                      <span class="pull-right">{{
-                        event.odds[2].totalsOver / oddsDivisor
+                      <span class="totalodds">{{
+                        convertOdds(event.odds[2].totalsOver)
                       }}</span>
                     </button>
                   </div>
                   <div class="total">
                     <button
-                      class="waves-effect waves-light btn"
+                      class="btn"
                       @click="
                         createBet(
                           event.event_id,
@@ -263,12 +253,12 @@
                         )
                       "
                     >
-                      <span class="pull-left"
-                        >U{{ event.odds[2].totalsPoints / 10 }}</span
+                      <span class="totalnum"
+                        >(U{{ event.odds[2].totalsPoints / 10 }})</span
                       >
 
-                      <span class="pull-right">{{
-                        event.odds[2].totalsUnder / oddsDivisor
+                      <span class="totalodds">{{
+                        convertOdds(event.odds[2].totalsUnder)
                       }}</span>
                     </button>
                   </div>
@@ -277,12 +267,12 @@
                 <!-- Show Totals market closed -->
                 <div v-else class="col s12 m4 odds">
                   <div class="total">
-                    <button class="waves-effect waves-light btn" disabled>
+                    <button class="btn" disabled>
                       N/A
                     </button>
                   </div>
                   <div class="total">
-                    <button class="waves-effect waves-light btn" disabled>
+                    <button class="btn" disabled>
                       N/A
                     </button>
                   </div>
@@ -306,21 +296,37 @@
 <script>
 import Vuex from 'vuex';
 import moment from 'moment';
-import constants from '../../../../main/constants/constants';
 
 export default {
   name: 'EventList',
 
   computed: {
-    ...Vuex.mapGetters(['getEventsFilter', 'eventsList', 'getTimezone'])
+    ...Vuex.mapGetters([
+      'getEventsFilter',
+      'eventsList',
+      'getTimezone',
+      'convertOdds',
+      'betSlip'
+    ])
   },
 
   methods: {
-    ...Vuex.mapActions(['listEvents', 'addBetToSlip', 'clearBetSlip']),
+    ...Vuex.mapActions([
+      'listEvents',
+      'addBetToSlip',
+      'clearBetSlip',
+      'testlistEvents',
+      'updateBet'
+    ]),
 
     moment: function() {
       return moment();
     },
+
+    //Todo: this is where we would determine the odds of the bet,
+    // so that we could use to update the betslip if the event changes.
+    // type being the 'outcome', see const oddsForBet in Betslip.js
+    createOddsFortype: function(type, event) {},
 
     // Create a unique bet ID.
     createBetId: function() {
@@ -358,12 +364,18 @@ export default {
         eventDetails: eventDetails,
         betType: betType,
         handicap: handicap,
-        totalValue: totalValue
+        totalValue: totalValue,
+        availability: true
       };
       console.log('----------Going to create bet placer----------', betData);
       this.addBetToSlip(betData);
     },
 
+    checkValidBets: function() {
+      console.log(
+        'checking valid bets, remove bet or warn and prevent confirm'
+      );
+    },
     // Check if money line odds are available for a given event.
     isEventMLOddsSet: function(event) {
       return !(
@@ -393,23 +405,45 @@ export default {
       let totalsOdds = this.isEventTotalsOddsSet();
 
       return mlOddsSet && spreadOddsSet && totalsOdds;
+    },
+
+    updateBetSlip: function() {
+      // Todo: check if the bets are still available
+      // For each item in betslip - set to unavailable if time restricted
+      // and update odds
+      // console.log("number of betslip",this.betSlip.length);
+      // console.log("number of betslip", this.betSlip)
+
+      for (const betItem of this.betSlip) {
+        let eventDetails = this.eventsList.find(
+          item => item.event_id === betItem.eventDetails.event_id
+        );
+        this.updateBet({ betItem, eventDetails });
+      }
+    }
+  },
+  // use watcher on the EventsList if it changes, then update the betslip odds
+  watch: {
+    eventsList() {
+      this.updateBetSlip();
     }
   },
 
   data() {
     return {
-      oddsDivisor: constants.ODDS_DIVISOR,
       timeout: 0
     };
   },
 
   created() {
     this.listEvents(this.getEventsFilter);
+    // this.testlistEvents();
 
     // ping listevents every 5 secs for new and updated events.
     this.timeout = setInterval(
       async function() {
         this.listEvents(this.getEventsFilter);
+        // this.testlistEvents();
       }.bind(this),
       5000
     );

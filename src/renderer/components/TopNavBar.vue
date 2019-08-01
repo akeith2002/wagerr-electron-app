@@ -8,7 +8,7 @@
         <h6>Wallet Home</h6>
       </router-link>
 
-      <router-link tag="li" to="/bets">
+      <router-link tag="li" to="/bet_history">
         <i class="navico-history"></i>
         <h6>Bet History</h6>
       </router-link>
@@ -37,14 +37,14 @@
 
         <!-- Dropdown Structure -->
         <ul id="settings-dropdown" class="dropdown-content">
-          <li v-if="walletUnlocked">
+          <li v-if="walletUnlocked && walletEncrypted">
             <a @click="lockWallet">
               <i class="icon-lock"></i>
               Lock Wallet
             </a>
           </li>
 
-          <li v-else>
+          <li v-else-if="walletEncrypted">
             <a class="modal-trigger" data-target="unlock-wallet-modal">
               <i class="icon-unlock"></i>
               Unlock Wallet
@@ -66,39 +66,24 @@
           </li>
 
           <li>
-            <a class="modal-trigger" data-target="sign-verify-message">
-              <i class="icon-pencil"></i>
-              Sign Message
-            </a>
-          </li>
-
-          <li>
-            <a class="modal-trigger" data-target="sign-verify-message">
-              <i class="icon-check"></i>
-              Verify Message
-            </a>
-          </li>
-
-          <li>
-            <a @click="backupWallet">
-              <i class="icon-files"></i>
-              Backup Wallet
-            </a>
-          </li>
-
-          <li>
             <a @click="updadteConsoleVisible">
               <i class="icon-cli"></i>
               RPC CLI Tool
             </a>
           </li>
+
+          <router-link tag="li" to="/preferences" exact>
+            <a>
+              <i class="icon-cog"></i>
+              Preferences
+            </a>
+          </router-link>
         </ul>
       </li>
 
       <!-- Settings Modals -->
       <encrypt-wallet></encrypt-wallet>
       <change-password></change-password>
-      <sign-verify-message></sign-verify-message>
       <unlock-wallet></unlock-wallet>
     </ul>
 
@@ -116,20 +101,15 @@
 
 <script>
 import Vuex from 'vuex';
-import wagerrRPC from '@/services/api/wagerrRPC';
 import EncryptWallet from '@/components/modals/EncryptWallet.vue';
 import ChangePassword from '@/components/modals/ChangePassword.vue';
 import UnlockWallet from '@/components/modals/UnlockWallet';
-import SignVerifyMessage from '@/components/modals/SignVerifyMessage';
-
-const { remote } = require('electron');
 
 export default {
   name: 'TopNavBar',
   components: {
     EncryptWallet,
     ChangePassword,
-    SignVerifyMessage,
     UnlockWallet
   },
 
@@ -144,38 +124,7 @@ export default {
   },
 
   methods: {
-    ...Vuex.mapActions(['lockWallet', 'updadteConsoleVisible', 'walletInfo']),
-
-    backupWallet: function() {
-      let folderPath = remote.dialog.showOpenDialog({
-        title: 'Backup Wallet.dat file.',
-        buttonLabel: 'Select Folder',
-        properties: ['openDirectory'],
-        buttons: ['Confirm', 'Cancel'],
-        cancelId: 1,
-        defaultId: 0
-      });
-
-      console.log();
-
-      if (folderPath) {
-        wagerrRPC.client
-          .backupWallet(folderPath)
-          .then(function(resp) {
-            console.log(resp);
-            M.toast({
-              html:
-                '<span class="toast__bold-font">Success &nbsp;</span> Wallet backup up located here: ' +
-                folderPath,
-              classes: 'green'
-            });
-          })
-          .catch(function(err) {
-            M.toast({ html: err, classes: 'wagerr-red-bg' });
-            console.log(err);
-          });
-      }
-    }
+    ...Vuex.mapActions(['lockWallet', 'updadteConsoleVisible', 'walletInfo'])
   },
 
   mounted() {
@@ -193,3 +142,24 @@ export default {
   }
 };
 </script>
+
+<style scoped lang="scss">
+@import '../assets/scss/_variables';
+
+.dropdown-content {
+  background-color: $dark_grey;
+}
+
+.dropdown-content li a {
+  color: white;
+}
+
+.dropdown-content li a i {
+  color: $wagerr_red;
+  font-size: 1.3em;
+}
+
+.dropdown-content li:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+</style>

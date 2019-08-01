@@ -10,36 +10,28 @@
         <a>Peers</a>
       </router-link>
 
+      <router-link class="col s4" tag="li" to="/tools/address_book" exact>
+        <a>Address Book</a>
+      </router-link>
+
+      <router-link
+        class="col s4"
+        tag="li"
+        to="/tools/sign_verify_message"
+        exact
+      >
+        <a>Sign/Verify Message</a>
+      </router-link>
+
       <router-link class="col s4" tag="li" to="/tools/wallet_repair">
         <a>Wallet Repair</a>
       </router-link>
-
-      <li class="col s4">
-        <a href="#" @click="onOpenConf">Wagerr.Conf</a>
-      </li>
     </ul>
   </div>
 </template>
 
 <script>
-import { getWagerrConfPath } from '../../../main/blockchain/blockchain';
-import { shell } from 'electron';
-const fs = require('fs');
-const path = require('path');
-
 export default {
-  name: 'ToolsNav',
-  data() {
-    return {
-      confPath: getWagerrConfPath()
-    };
-  },
-  computed: {},
-  created() {},
-  methods: {
-    onOpenConf: function() {
-      shell.openItem(this.confPath);
-    }
-  }
+  name: 'ToolsNav'
 };
 </script>

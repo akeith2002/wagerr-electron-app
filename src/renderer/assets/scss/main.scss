@@ -479,7 +479,7 @@ header {
       border: none;
       border-radius: 4px;
       box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.2);
-      margin-bottom: 20px;
+      margin-bottom: 15px;
       overflow: hidden;
       .event-tournament {
         background: $wagerr_red;
@@ -592,17 +592,20 @@ header {
               border: 4px;
               background-color: #e9e9e9;
               position: relative;
-              box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2);
+              box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.1),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.5);
               border: 1px solid #bebebe;
               color: #555;
-              font-weight: 700;
-              letter-spacing: 0.5px;
-              font-family: 'Montserrat';
+              font-weight: 800;
+              font-family: 'Open Sans';
               font-size: 14px;
+              letter-spacing: 0.5px;
               &:hover {
                 color: $white;
                 border: 1px solid $wagerr_dark_red;
                 background: $brightred;
+                box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.2),
+                  inset 0 0 0 1px rgba(255, 255, 255, 0.2);
                 &::before {
                   opacity: 0.3;
                 }
@@ -610,12 +613,15 @@ header {
                   opacity: 0.3;
                 }
               }
+              &:active {
+                background: $wagerr_dark_red;
+              }
               &::before {
                 content: '';
                 background-image: url(../images/bumps.svg);
                 background-position: center center;
                 background-repeat: no-repeat;
-                width: 14px;
+                width: 0;
                 height: 26px;
                 position: absolute;
                 left: 3px;
@@ -627,7 +633,7 @@ header {
                 background-image: url(../images/bumps.svg);
                 background-position: center center;
                 background-repeat: no-repeat;
-                width: 14px;
+                width: 0;
                 height: 26px;
                 position: absolute;
                 right: 3px;
@@ -644,6 +650,15 @@ header {
                 &::after {
                   opacity: 0;
                 }
+              }
+              .totalnum {
+                display: inline-block;
+                font-weight: 700;
+              }
+              .totalodds {
+                display: inline-block;
+                font-weight: 800;
+                padding-left: 2px;
               }
             }
           }
@@ -750,8 +765,9 @@ header {
             .selection {
               color: $dark_grey;
               font-weight: 700;
-              padding: 10px 10px 10px;
-              font-size: 14px;
+              padding: 15px 10px 10px;
+              font-size: 16px;
+              line-height: 22px;
               font-family: 'Montserrat';
               color: $wagerr_red;
               h6 {
@@ -763,12 +779,16 @@ header {
                 letter-spacing: 1px;
                 font-family: 'Open Sans';
                 font-weight: 600;
+                margin: 0;
+                line-height: 18px;
               }
               .winner {
                 display: block;
                 text-align: center;
                 float: none;
                 font-size: 18px;
+                line-height: 20px;
+                padding-bottom: 5px;
               }
               .odds {
                 display: inline-block;
@@ -858,7 +878,7 @@ header {
                 color: $dark_grey;
                 font-size: 13px;
                 font-family: 'Open Sans';
-                font-weight: 800;
+                font-weight: 700;
                 margin-bottom: 2px;
               }
               .potential-returns {
@@ -1052,7 +1072,7 @@ header {
   }
 }
 
-#bets {
+#bet_history {
   h4 {
     font-weight: 700;
     font-family: 'Montserrat';
@@ -1064,7 +1084,7 @@ header {
 }
 
 .splash {
-  padding-top: 4%;
+  padding-top: 3%;
   margin: auto;
   width: 50%;
   color: white;
@@ -1074,7 +1094,7 @@ header {
     background-repeat: no-repeat;
     background-size: contain;
     width: 100%;
-    height: 300px;
+    height: 280px;
     margin-bottom: 0;
   }
   .version {
@@ -1245,6 +1265,7 @@ header {
         margin: 20px 0;
         overflow: hidden;
         .stats {
+          min-height: 86px;
           h6 {
             font-family: 'Montserrat';
             font-weight: 700;
@@ -1345,6 +1366,11 @@ header {
             text-transform: none;
             display: block;
             &:hover {
+              background-color: $wagerr_red;
+            }
+          }
+          &.router-link-active {
+            a {
               background-color: $wagerr_red;
             }
           }
@@ -1498,8 +1524,8 @@ header {
     .modal-text {
       padding-bottom: 20px;
       .modal-font {
-        font-size: 18px;
-        line-height: 24px;
+        font-size: 16px;
+        line-height: 22px;
         font-weight: 700px;
         font-family: 'Montserrat';
       }
@@ -1535,7 +1561,6 @@ header {
       margin-bottom: 20px;
       text-align: center;
       button {
-        width: 150px;
         background-color: $wagerr_red;
         &::active {
           width: 150px;
@@ -1543,6 +1568,15 @@ header {
       }
     }
   }
+}
+
+.cost {
+  color: $grey;
+  display: block;
+  font-size: 12px;
+  font-style: italic;
+  letter-spacing: 1px;
+  padding-top: 8px;
 }
 
 body.lightbox #app .command .el-input input.el-input__inner {
@@ -1866,6 +1900,8 @@ body.lightbox #app .command .el-input input.el-input__inner {
 
 .modal .modal-header {
   color: $wagerr_red;
+  padding-top: 20px;
+  text-align: center;
 }
 
 .modal .modal-header,
@@ -1881,29 +1917,7 @@ body.lightbox #app .command .el-input input.el-input__inner {
 
 .modal-content {
   color: white;
-}
-
-.dropdown-content {
-  background-color: $dark_grey;
-}
-
-.dropdown-content li a {
-  color: white;
-}
-
-.dropdown-content li a i {
-  color: $wagerr_red;
-  font-size: 1.3em;
-}
-
-.dropdown-content li:hover {
-  background-color: rgba(0, 0, 0, 0.1);
-}
-
-.tabs .indicator {
-  width: 100%;
-  border-bottom: 1px solid $wagerr_red;
-  background-color: transparent;
+  text-align: center;
 }
 
 .input-field > .active {
