@@ -77,7 +77,8 @@ body {
   text-transform: uppercase;
   transition: none;
   &:hover,
-  &:focus {
+  &:focus,
+  &.active {
     background: $wagerr_dark_red;
     box-shadow: inherit;
   }
@@ -91,7 +92,8 @@ body {
   text-transform: uppercase;
   transition: none;
   &:hover,
-  &:focus {
+  &:focus,
+  &.active {
     background: $wagerr_dark_red !important;
     box-shadow: inherit;
   }
